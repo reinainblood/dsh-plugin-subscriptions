@@ -109,8 +109,7 @@ export async function resolveImages(
     }]
   }
   return Promise.all(messages.map(async (message): Promise<TranslatableMessage> => ({
-    role: message.role,
-    source: message.source,
+    ...message,
     content: (await Promise.all(message.content.map(resolveBlock))).flat(),
   })))
 }

@@ -670,3 +670,27 @@ test('Anthropic translator: error event mapping', () => {
     (error: unknown) => error instanceof LlmError && error.code === 'AUTH',
   )
 })
+
+test('resolveImages preserves message-level tool identities and error flags when any history image is present', async () => {
+  // Newer DSH runtimes carry tool-result metadata on the message envelope.
+  // Keep the old SDK fixture compatible while exercising the actual runtime shape.
+  const ref = { attachmentId: 'history-image', mediaType: 'image/png', bytes: 2, width: 1, height: 1 }
+  for (const imageInResult of [false, true]) {
+    const history = [
+      message('user', imageInResult ? [{ type: 'text', text: 'fixture' }] : [{ type: 'image', attachment: ref } as never]),
+      message('assistant', [toolCall('a', 'read', '{}'), toolCall('b', 'read', '{}')]),
+      { ...message('user', [{ type: 'text', text: 'first result' }]), role: 'tool', toolCallId: 'a', isError: false },
+      { ...message('user', imageInResult ? [{ type: 'image', attachment: ref } as never] : [{ type: 'text', text: 'error result' }]), role: 'tool', toolCallId: 'b', isError: true },
+    ]
+    const before = structuredClone(history)
+    const resolved = await resolveImages(history as unknown as Message[], {
+      readImage: async () => ({ ref, data: new Uint8Array([104, 105]) }),
+    } as never)
+    for (let i = 0; i < history.length; i++) {
+      const { content: originalContent, ...envelope } = history[i]
+      const { content: resolvedContent, ...resolvedEnvelope } = resolved[i]
+      assert.deepEqual(resolvedEnvelope, envelope, 'image resolution must retain the whole message envelope')
+    }
+    assert.deepEqual(history, before, 'saved history is immutable')
+  }
+})

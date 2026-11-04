@@ -4,7 +4,10 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "jsx": "react-jsx",
-    "lib": ["es2024", "dom"],
+    "lib": [
+      "es2024",
+      "dom"
+    ],
     "strict": true,
     "noImplicitAny": true,
     "exactOptionalPropertyTypes": true,
@@ -14,7 +17,17 @@
     "stripInternal": true,
     "outDir": "lib",
     "rootDir": "src",
-    "types": ["node"]
+    "types": [
+      "node"
+    ],
+    "paths": {
+      "@deepseek-ai/schemastery": [
+        "./node_modules/@deepseek-ai/schemastery/lib/types/index.d.ts"
+      ]
+    }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ]
 }
